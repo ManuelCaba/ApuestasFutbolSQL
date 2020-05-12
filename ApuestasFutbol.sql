@@ -50,11 +50,13 @@ Create Table Apuestas (
 	ID Int NOT NULL Identity,
 	[DineroApostado] SmallMoney NOT NULL,
 	IDPartido Int NOT NULL,
-	IDUsuario Int NOT NULL,
+	NickUsuario Int NOT NULL,
 
 
-	Constraint PKClasificacion Primary Key (Posicion),
-	Constraint FKClasificacionEquipo Foreign Key (IDEquipo) REFERENCES Equipos (ID)
+
+	Constraint PKApuestas Primary Key (ID),
+	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
+	Constraint FKApuestaUsuario Foreign Key (IDUsuario) REFERENCES Usuarios (ID)
 )
 -- Equipos participantes 
 INSERT INTO Equipos (ID,Nombre,Ciudad,Pais)
