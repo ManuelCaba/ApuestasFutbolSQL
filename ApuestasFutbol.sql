@@ -50,9 +50,7 @@ Create Table Apuestas (
 	ID Int NOT NULL Identity,
 	[DineroApostado] SmallMoney NOT NULL,
 	IDPartido Int NOT NULL,
-	NickUsuario Int NOT NULL,
-
-
+	NickUsuario VarChar(20) NOT NULL,
 
 	Constraint PKApuestas Primary Key (ID),
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
