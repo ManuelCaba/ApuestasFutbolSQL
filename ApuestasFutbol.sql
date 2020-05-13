@@ -44,8 +44,8 @@ Create Table Partidos (
 	Fecha SmallDateTime NULL,
 
 	Constraint PKPartidos Primary Key (ID),
-	Constraint FKPartidoLocal Foreign Key (ELocal) REFERENCES Equipos (ID),
-	Constraint FKPartidoVisitante Foreign Key (EVisitante) REFERENCES Equipos (ID)
+	Constraint FKPartidoLocal Foreign Key (ELocal) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE CASCADE,
+	Constraint FKPartidoVisitante Foreign Key (EVisitante) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE CASCADE
 
 )
 GO
@@ -63,7 +63,7 @@ Create Table Clasificaciones (
 	GolesContra SmallInt NOT NULL Default 0,
 
 	Constraint PKClasificacion Primary Key (Posicion),
-	Constraint FKClasificacionEquipo Foreign Key (IDEquipo) REFERENCES Equipos (ID)
+	Constraint FKClasificacionEquipo Foreign Key (IDEquipo) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE CASCADE
 
 )
 GO
@@ -75,7 +75,7 @@ Create Table Apuestas (
 	NickUsuario VarChar(20) NOT NULL,
 
 	Constraint PKApuestas Primary Key (ID),
-	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
+	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID) ON DELETE NO ACTION ON UPDATE CASCADE,
 	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick),
 	Constraint DineroApostado Check (DineroApostado BETWEEN 0.5 AND 200)
 
