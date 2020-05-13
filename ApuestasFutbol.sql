@@ -68,7 +68,7 @@ Create Table Apuestas (
 
 	Constraint PKApuestas Primary Key (ID),
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
-	Constraint FKApuestaUsuario Foreign Key (IDUsuario) REFERENCES Usuarios (ID)
+	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick)
 )
 -- Equipos participantes 
 INSERT INTO Equipos (ID,Nombre,Ciudad,Pais)
