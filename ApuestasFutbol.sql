@@ -44,14 +44,14 @@ Create Table Partidos (
 	Fecha SmallDateTime NULL,
 
 	Constraint PKPartidos Primary Key (ID),
-	Constraint FKPartidoLocal Foreign Key (ELocal) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE CASCADE,
-	Constraint FKPartidoVisitante Foreign Key (EVisitante) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE CASCADE
+	Constraint FKPartidoLocal Foreign Key (ELocal) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE NO ACTION,
+	Constraint FKPartidoVisitante Foreign Key (EVisitante) REFERENCES Equipos (ID) ON DELETE NO ACTION ON UPDATE NO ACTION
 
 )
 GO
 
-Create Table Clasificaciones (
-	Posicion TinyInt NOT NULL,
+CREATE Table Clasificaciones (
+	Posicion TinyInt NOT NULL IDENTITY (1,1),
 	IDEquipo Char(4) NOT NULL,
 	NombreEquipo VarChar(20) NOT NULL,
 	PartidosJugados TinyInt NOT NULL Default 0,
@@ -114,6 +114,34 @@ Create Table GanadoresPartidos (
 	Constraint CKResultado CHECK (Resultado IN ('1', 'X', '2'))
 
 )
+GO
+
+CREATE OR ALTER TRIGGER PartidosFinalizados ON Partidos FOR UPDATE 
+AS
+	BEGIN
+		IF EXISTS (SELECT * FROM deleted WHERE Finalizado = 1)
+			BEGIN	
+			RAISERROR('Algún partido ya ha sido finalizado.',10,1)
+			ROLLBACK Transaction
+			END
+		ELSE
+			BEGIN
+				UPDATE Partidos
+				SET Finalizado = 1
+				WHERE ID IN
+							(
+								SELECT ID FROM inserted WHERE Finalizado = 0
+							)
+			END
+	END
+GO
+
+CREATE OR ALTER TRIGGER GenerarClasificacion ON Equipos FOR INSERT
+AS
+	BEGIN
+		INSERT Clasificaciones (IDEquipo, NombreEquipo)
+		SELECT ID, Nombre FROM inserted
+	END
 GO
 
 -- Equipos participantes 
