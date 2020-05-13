@@ -8,7 +8,7 @@ Create Table Usuarios (
 
 	Nick Varchar(20) NOT NULL,
 	Contraseña Varchar(32) NOT NULL,
-	Saldo Smallmoney NOT NULL,
+	Saldo Smallmoney NOT NULL Default 0,
 	FechaAlta Date NULL,
 	FechaBaja Date NULL,
 
@@ -73,23 +73,35 @@ Create Table Apuestas (
 )
 GO
 Create Table Handicaps (
-	IDApuesta Int NOT NULL Identity,
+	IDApuesta Int NOT NULL,
 	Handicap TinyInt NOT NULL,
 
-	Constraint PKApuestas Primary Key (IDApuesta),
-	Constraint FKApuestaHandicap Foreign Key (IDApuesta) REFERENCES Apuestas (ID),
+	Constraint PKHandicaps Primary Key (IDApuesta),
+	Constraint FKApuestasHandicaps Foreign Key (IDApuesta) REFERENCES Apuestas (ID) ON DELETE CASCADE ON UPDATE CASCADE, 
 	Constraint CKHandicap Check ((Handicap BETWEEN -3 AND 3) AND Handicap <> 0)
 )
 GO
 Create Table OversUnders (
-	IDApuesta Int NOT NULL Identity,
+	IDApuesta Int NOT NULL,
 	[Over/Under] bit NOT NULL,
 	Numero Decimal(2,1) NOT NULL,
 
-	Constraint PKApuestas Primary Key (IDApuesta),
-	Constraint FKApuestaHandicap Foreign Key (IDApuesta) REFERENCES Apuestas (ID),
+	Constraint PKOversUnders Primary Key (IDApuesta),
+	Constraint FKApuestaOversUnders Foreign Key (IDApuesta) REFERENCES Apuestas (ID) ON DELETE CASCADE ON UPDATE CASCADE,
 	Constraint CKNumero Check ((Numero BETWEEN 0 AND 6) AND (Numero % 0.5 = 0))
 )
+GO
+Create Table GanadoresPartidos (
+	IDApuesta Int NOT NULL,
+	Resultado Char(1) NOT NULL,
+
+	Constraint PKGanadoresPartidos Primary Key (IDApuesta),
+	Constraint FKApuestasGanadoresPartidos Foreign Key (IDApuesta) REFERENCES Apuestas(ID) ON DELETE CASCADE ON UPDATE CASCADE,
+	Constraint CKResultado CHECK (Resultado IN ('1', 'X', '2'))
+
+)
+GO
+
 -- Equipos participantes 
 INSERT INTO Equipos (ID,Nombre,Ciudad,Pais)
      VALUES ('RBET','Real Betis','Sevilla','España'),('LIVL','Liverpool FC','Liverpool','Reino Unido'),('ESRO','Estrella Roja','Belgrado','Serbia'),
