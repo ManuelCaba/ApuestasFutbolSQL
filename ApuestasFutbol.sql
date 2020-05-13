@@ -1,12 +1,26 @@
--- Resultados de una liga deportiva
--- Autor: Leo
--- 19/03/2020 Quinto día de confinamiento
-Use master
-GO
+
 Create Database ApuestasFutbol
 GO
 Use ApuestasFutbol
 GO
+
+Create Table Usuarios (
+
+	Nick Varchar(20) NOT NULL,
+	Contraseña Varchar(32) NOT NULL,
+	Saldo Smallmoney NOT NULL,
+	FechaAlta Date NULL,
+	FechaBaja Date NULL,
+
+	Constraint PKUsuarios Primary Key (Nick),
+	Constraint CKNick Check (DATALENGTH(Nick) > 3),
+	Constraint CKContraseña Check (DATALENGTH(Contraseña) > 7),
+	Constraint CKFechaAlta Check (FechaAlta < FechaBaja),
+	Constraint CKFechaBaja Check (FechaBaja < GETDATE())
+
+
+)
+
 Create Table Equipos (
 	ID Char(4) NOT NULL,
 	Nombre VarChar(20) NOT NULL,
