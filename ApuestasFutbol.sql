@@ -62,13 +62,14 @@ Create Table Clasificaciones (
 GO
 Create Table Apuestas (
 	ID Int NOT NULL Identity,
-	[DineroApostado] SmallMoney NOT NULL,
+	DineroApostado SmallMoney NOT NULL,
 	IDPartido Int NOT NULL,
 	NickUsuario VarChar(20) NOT NULL,
 
 	Constraint PKApuestas Primary Key (ID),
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
-	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick)
+	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick),
+	Constraint DineroApostado Check (DineroApostado BETWEEN 1 AND 200),
 )
 -- Equipos participantes 
 INSERT INTO Equipos (ID,Nombre,Ciudad,Pais)
