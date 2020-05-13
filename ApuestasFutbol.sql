@@ -18,19 +18,23 @@ Create Table Usuarios (
 	Constraint CKFechaAlta Check (FechaAlta < FechaBaja),
 	Constraint CKFechaBaja Check (FechaBaja < GETDATE())
 
-
 )
+GO
 
 Create Table Equipos (
+
 	ID Char(4) NOT NULL,
 	Nombre VarChar(20) NOT NULL,
 	Ciudad VarChar(25) NULL,
 	Pais VarChar (20) NULL,
 
 	Constraint PKEquipos Primary Key (ID)
+
 )
 GO
+
 Create Table Partidos (
+
 	ID Int NOT NULL Identity,
 	ELocal Char(4) NOT NULL,
 	EVisitante Char(4) NOT NULL,
@@ -42,8 +46,10 @@ Create Table Partidos (
 	Constraint PKPartidos Primary Key (ID),
 	Constraint FKPartidoLocal Foreign Key (ELocal) REFERENCES Equipos (ID),
 	Constraint FKPartidoVisitante Foreign Key (EVisitante) REFERENCES Equipos (ID)
+
 )
 GO
+
 Create Table Clasificaciones (
 	Posicion TinyInt NOT NULL,
 	IDEquipo Char(4) NOT NULL,
@@ -58,8 +64,10 @@ Create Table Clasificaciones (
 
 	Constraint PKClasificacion Primary Key (Posicion),
 	Constraint FKClasificacionEquipo Foreign Key (IDEquipo) REFERENCES Equipos (ID)
+
 )
 GO
+
 Create Table Apuestas (
 	ID Int NOT NULL Identity,
 	DineroApostado SmallMoney NOT NULL,
@@ -70,8 +78,10 @@ Create Table Apuestas (
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
 	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick),
 	Constraint DineroApostado Check (DineroApostado BETWEEN 0.5 AND 200)
+
 )
 GO
+
 Create Table Handicaps (
 	IDApuesta Int NOT NULL,
 	Handicap TinyInt NOT NULL,
@@ -79,8 +89,10 @@ Create Table Handicaps (
 	Constraint PKHandicaps Primary Key (IDApuesta),
 	Constraint FKApuestasHandicaps Foreign Key (IDApuesta) REFERENCES Apuestas (ID) ON DELETE CASCADE ON UPDATE CASCADE, 
 	Constraint CKHandicap Check ((Handicap BETWEEN -3 AND 3) AND Handicap <> 0)
+
 )
 GO
+
 Create Table OversUnders (
 	IDApuesta Int NOT NULL,
 	[Over/Under] bit NOT NULL,
@@ -89,8 +101,10 @@ Create Table OversUnders (
 	Constraint PKOversUnders Primary Key (IDApuesta),
 	Constraint FKApuestaOversUnders Foreign Key (IDApuesta) REFERENCES Apuestas (ID) ON DELETE CASCADE ON UPDATE CASCADE,
 	Constraint CKNumero Check ((Numero BETWEEN 0 AND 6) AND (Numero % 0.5 = 0))
+
 )
 GO
+
 Create Table GanadoresPartidos (
 	IDApuesta Int NOT NULL,
 	Resultado Char(1) NOT NULL,
