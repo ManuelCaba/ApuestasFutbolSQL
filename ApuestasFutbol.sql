@@ -69,7 +69,26 @@ Create Table Apuestas (
 	Constraint PKApuestas Primary Key (ID),
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID),
 	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick),
-	Constraint DineroApostado Check (DineroApostado BETWEEN 1 AND 200),
+	Constraint DineroApostado Check (DineroApostado BETWEEN 0.5 AND 200)
+)
+GO
+Create Table Handicaps (
+	IDApuesta Int NOT NULL Identity,
+	Handicap TinyInt NOT NULL,
+
+	Constraint PKApuestas Primary Key (IDApuesta),
+	Constraint FKApuestaHandicap Foreign Key (IDApuesta) REFERENCES Apuestas (ID),
+	Constraint CKHandicap Check ((Handicap BETWEEN -3 AND 3) AND Handicap <> 0)
+)
+GO
+Create Table OversUnders (
+	IDApuesta Int NOT NULL Identity,
+	[Over/Under] bit NOT NULL,
+	Numero Decimal(2,1) NOT NULL,
+
+	Constraint PKApuestas Primary Key (IDApuesta),
+	Constraint FKApuestaHandicap Foreign Key (IDApuesta) REFERENCES Apuestas (ID),
+	Constraint CKNumero Check ((Numero BETWEEN 0 AND 6) AND (Numero % 0.5 = 0))
 )
 -- Equipos participantes 
 INSERT INTO Equipos (ID,Nombre,Ciudad,Pais)
