@@ -116,6 +116,107 @@ Create Table GanadoresPartidos (
 )
 GO
 
+--Funciones Clasificacion
+CREATE TYPE Partidos 
+   AS TABLE
+      (
+		ID Int,
+		ELocal Char(4),
+		EVisitante Char(4),
+		GolesLocal TinyInt,
+		GolesVisitante TinyInt,
+		Finalizado Bit,
+		Fecha SmallDateTime
+	  )
+GO
+
+CREATE OR ALTER FUNCTION PartidosGanadosLocal (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT ELocal AS ID, COUNT(Elocal) PartidosGanadosLocal FROM @Partidos
+	WHERE GolesLocal > GolesVisitante
+	GROUP BY ELocal		
+)
+GO
+
+CREATE OR ALTER FUNCTION PartidosGanadosVisitante (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT EVisitante AS ID, COUNT(EVisitante) PartidosGanadosVisitante FROM @Partidos
+	WHERE GolesVisitante > GolesLocal
+	GROUP BY EVisitante
+)
+GO
+
+CREATE OR ALTER FUNCTION PartidosEmpatados (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT E.ID, COUNT(*) AS PartidosEmpatados FROM Equipos AS E 
+	INNER JOIN @Partidos AS P ON (E.ID = P.ELocal OR E.ID = P.EVisitante) AND P.GolesLocal = P.GolesVisitante
+	WHERE P.Finalizado = 1
+	GROUP BY E.ID
+)
+GO
+
+CREATE OR ALTER FUNCTION PartidosTotales (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT E.ID, COUNT(*) AS PartidosTotales FROM Equipos AS E
+	INNER JOIN @Partidos AS P ON E.ID = P.ELocal OR E.ID = P.EVisitante
+	WHERE P.Finalizado = 1
+	GROUP BY E.ID
+)
+GO
+
+
+CREATE OR ALTER FUNCTION GolesLocales (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT ELocal AS ID, SUM(GolesLocal) AS GolesLocal FROM @Partidos
+	GROUP BY ELocal
+)
+GO
+
+CREATE OR ALTER FUNCTION GolesVisitante (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT EVisitante AS ID, SUM(GolesVisitante) AS GolesVisitante FROM @Partidos
+	GROUP BY EVisitante
+)
+GO
+
+CREATE OR ALTER FUNCTION GolesEnContra (@Partidos Partidos READONLY) RETURNS TABLE AS RETURN
+(
+	SELECT E.ID, SUM(CASE WHEN P.ELocal <> E.ID THEN GolesLocal
+									ELSE GolesVisitante
+					 END) AS GolesEnContra FROM Equipos AS E 
+	INNER JOIN @Partidos AS P ON E.ID = P.ELocal OR E.ID = P.EVisitante
+	GROUP BY E.ID
+)
+GO
+
+--TRIGGERS
+GO
+CREATE OR ALTER TRIGGER ActualizarClasificacion ON Partidos AFTER INSERT,UPDATE
+AS
+	BEGIN
+
+	DECLARE @Partidos AS Partidos
+
+	INSERT @Partidos (ID,ELocal,EVisitante,GolesLocal,GolesVisitante,Finalizado,Fecha)
+	SELECT * FROM Partidos
+
+	DELETE FROM Clasificaciones
+
+	DBCC CHECKIDENT (Clasificaciones, RESEED,0)
+
+	INSERT Clasificaciones
+	SELECT E.ID, E.Nombre, ISNULL(PT.PartidosTotales,0), (ISNULL(PGL.PartidosGanadosLocal,0) + ISNULL(PGV.PartidosGanadosVisitante,0)) AS PartidosGanados, ISNULL(PE.PartidosEmpatados,0), (ISNULL(GL.GolesLocal,0) + ISNULL(GV.GolesVisitante,0)) AS GolesFavor, ISNULL(GE.GolesEnContra,0) FROM Equipos AS E 
+	LEFT JOIN PartidosGanadosLocal(@Partidos) AS PGL ON E.ID = PGL.ID
+	FULL JOIN PartidosGanadosVisitante(@Partidos) AS PGV ON E.ID = PGV.ID
+	FULL JOIN PartidosEmpatados(@Partidos) AS PE ON E.ID = PE.ID
+	FULL JOIN PartidosTotales(@Partidos) AS PT ON E.ID = PT.ID
+	FULL JOIN GolesLocales(@Partidos) AS GL ON E.ID = GL.ID
+	FULL JOIN GolesVisitante(@Partidos) AS GV ON E.ID = GV.ID
+	FULL JOIN GolesEnContra(@Partidos) AS GE ON E.ID = GE.ID
+	ORDER BY (((PGL.PartidosGanadosLocal + PGV.PartidosGanadosVisitante) * 3) + PE.PartidosEmpatados) DESC, (GV.GolesVisitante + GL.GolesLocal - GE.GolesEnContra) DESC, (GV.GolesVisitante + GL.GolesLocal) DESC, PGV.PartidosGanadosVisitante DESC, GV.GolesVisitante DESC
+	END
+GO
+
 CREATE OR ALTER TRIGGER PartidosFinalizados ON Partidos FOR UPDATE 
 AS
 	BEGIN
