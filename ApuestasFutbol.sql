@@ -77,6 +77,7 @@ Create Table Apuestas (
 	DineroApostado SmallMoney NOT NULL,
 	IDPartido Int NOT NULL,
 	NickUsuario VarChar(20) NOT NULL,
+	Comprobada Bit NOT NULL DEFAULT 0,
 
 	Constraint PKApuestas Primary Key (ID),
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID) ON DELETE NO ACTION ON UPDATE CASCADE,
