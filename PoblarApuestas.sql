@@ -9,6 +9,7 @@ DECLARE @Comprobada Bit
 DECLARE @NickUsuario Varchar(20)
 DECLARE @TipoApuesta TinyInt
 DECLARE @Resultado TinyInt
+DECLARE @ResultadoAleatorio DECIMAL(2,1)
 DECLARE @Apuesta SmallInt
 
 
@@ -54,11 +55,19 @@ WHILE @Cont <= @Apuestas
 					END
 				ELSE IF @TipoApuesta = 2
 					BEGIN
-						PRINT 'En construccion 2'
+						WHILE @Resultado = 0
+							SET @Resultado = Floor(rand() * 7) - 3
+
+						INSERT Handicaps
+						VALUES(@Apuesta, @Resultado)
 					END
 				ELSE
 					BEGIN
-						PRINT 'En construccion 3'
+						SET @Resultado = Floor(rand() * 2)
+						SET @ResultadoAleatorio = Floor(rand() * 6) + 0.5
+
+						INSERT OversUnders
+						VALUES(@Apuesta, @Resultado, @ResultadoAleatorio)
 					END
 
 				SET @Cont += 1
