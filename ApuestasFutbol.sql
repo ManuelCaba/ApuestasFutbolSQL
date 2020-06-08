@@ -89,7 +89,7 @@ GO
 
 Create Table Handicaps (
 	IDApuesta Int NOT NULL,
-	Handicap TinyInt NOT NULL,
+	Handicap SmallInt NOT NULL,
 
 	Constraint PKHandicaps Primary Key (IDApuesta),
 	Constraint FKApuestasHandicaps Foreign Key (IDApuesta) REFERENCES Apuestas (ID) ON DELETE CASCADE ON UPDATE CASCADE, 
@@ -492,6 +492,9 @@ AS
 	END
 GO
 
+EXECUTE PoblarUsuarios
+GO
+
 --Por último poblamos la tabla Apuestas
 
 --BEGIN TRANSACTION
@@ -508,7 +511,7 @@ AS
 		DECLARE @Comprobada Bit
 		DECLARE @NickUsuario Varchar(20)
 		DECLARE @TipoApuesta TinyInt
-		DECLARE @Resultado TinyInt
+		DECLARE @Resultado SmallInt
 		DECLARE @ResultadoAleatorio DECIMAL(2,1)
 		DECLARE @Apuesta SmallInt
 
@@ -533,6 +536,12 @@ AS
 		
 				IF(NOT EXISTS (SELECT * FROM Apuestas WHERE NickUsuario = @NickUsuario AND IDPartido = @Partido))
 					BEGIN
+						
+						IF ((SELECT Finalizado FROM Partidos WHERE ID = @Partido) = 0)
+							BEGIN
+								SET @Comprobada = 0
+							END
+
 						INSERT Apuestas (DineroApostado, IDPartido, NickUsuario, Comprobada)
 						SELECT @DineroApostado,@Partido, @NickUsuario, @Comprobada
 
@@ -578,33 +587,10 @@ AS
 
 GO
 
---ROLLBACK
-
-EXECUTE PoblarUsuarios
+EXECUTE PoblarApuestas
 GO
 
+--ROLLBACK
 
--- Poblamos la tabla Apuestas
---GO
---CREATE OR ALTER PROCEDURE PoblarApuestas
---AS
---	BEGIN
---		SELECT TOP 1 *, Floor(rand()*199) + 1 AS DineroApostado FROM Partidos
---		ORDER BY NEWID()
---		SELECT TOP 1 * FROM Usuarios
---		ORDER BY NEWID()
 
-		
 
---		SELECT * FROM Partidos
-
---		SELECT * FROM Apuestas
-
---		SET DATEFORMAT mdy
-
---		INSERT INTO Apuestas (DineroApostado , IDPartido, NickUsuario)
---		SELECT L.ID, V.ID FROM Equipos AS L CROSS JOIN Equipos AS V Where L.ID <> V.ID
-		
-
---	END
---GO
