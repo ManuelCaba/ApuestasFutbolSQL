@@ -359,21 +359,35 @@ AS
 		
 		DECLARE @GolesL TinyInt, @GolesV TinyInt, @Partido SmallInt
 		DECLARE CPartidos CURSOR FOR Select ID From Partidos
-		Open Cpartidos
-		Fetch Next FROM Cpartidos INTO @Partido
-		While @@FETCH_STATUS = 0
-		Begin
-			If @Partido % 15 <> 0
-			Begin
-				SET @GolesL = Floor(rand()*4)
-				SET @GolesV = Floor(rand()*3)
-				Update Partidos Set GolesLocal = @GolesL, GolesVisitante = @GolesV, Finalizado = 1
-					Where Current Of Cpartidos
-			End -- If
-			Fetch Next FROM Cpartidos INTO @Partido
-		End -- While
-		Close Cpartidos
-		Deallocate CPartidos
+		DECLARE @DiasAux Int
+		DECLARE @Fecha Date
+
+		OPEN Cpartidos
+
+		FETCH NEXT FROM Cpartidos INTO @Partido
+
+		WHILE @@FETCH_STATUS = 0
+			BEGIN
+				SET @DiasAux = Floor(rand()*365) - 150
+				SET @Fecha = CONVERT(DATE, DATEADD(DAY, @DiasAux, GETDATE()))
+
+				UPDATE Partidos
+				SET Fecha = @Fecha
+				WHERE CURRENT OF Cpartidos
+
+				IF(@Fecha <= GETDATE())
+					BEGIN
+						SET @GolesL = Floor(rand()*4)
+						SET @GolesV = Floor(rand()*3)
+						Update Partidos Set GolesLocal = @GolesL, GolesVisitante = @GolesV, Finalizado = 1
+							Where Current Of Cpartidos
+					END -- If
+
+				FETCH NEXT FROM Cpartidos INTO @Partido
+			END -- While
+
+		CLOSE Cpartidos
+		DEALLOCATE CPartidos
 	END
 GO
 
