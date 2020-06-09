@@ -82,7 +82,8 @@ Create Table Apuestas (
 	Constraint PKApuestas Primary Key (ID),
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID) ON DELETE NO ACTION ON UPDATE CASCADE,
 	Constraint FKApuestaUsuario Foreign Key (NickUsuario) REFERENCES Usuarios (Nick),
-	Constraint DineroApostado Check (DineroApostado BETWEEN 0.5 AND 200)
+	Constraint DineroApostado Check (DineroApostado BETWEEN 0.5 AND 200),
+	Constraint UQUsuarioPartido UNIQUE (NickUsuario, IDPartido)
 
 )
 GO
@@ -261,18 +262,9 @@ AS
 	BEGIN
 		IF EXISTS (SELECT * FROM deleted WHERE Finalizado = 1)
 			BEGIN	
-			DECLARE @MensajePartido NVarchar(255) = FormatMessage(50002);
-			THROW 50002, @MensajePartido ,1
-			ROLLBACK Transaction
-			END
-		ELSE
-			BEGIN
-				UPDATE Partidos
-				SET Finalizado = 1
-				WHERE ID IN
-							(
-								SELECT ID FROM inserted WHERE Finalizado = 0
-							)
+				DECLARE @MensajePartido NVarchar(255) = FormatMessage(50002);
+				THROW 50002, @MensajePartido ,1
+				ROLLBACK Transaction
 			END
 	END
 GO
@@ -360,7 +352,8 @@ AS
 		DECLARE @GolesL TinyInt, @GolesV TinyInt, @Partido SmallInt
 		DECLARE CPartidos CURSOR FOR Select ID From Partidos
 		DECLARE @DiasAux Int
-		DECLARE @Fecha Date
+		DECLARE @Fecha DateTime
+		DECLARE @HoraFecha TinyInt
 
 		OPEN Cpartidos
 
@@ -369,18 +362,20 @@ AS
 		WHILE @@FETCH_STATUS = 0
 			BEGIN
 				SET @DiasAux = Floor(rand()*365) - 150
+				SET @HoraFecha = Floor(rand()*10) + 12
 				SET @Fecha = CONVERT(DATE, DATEADD(DAY, @DiasAux, GETDATE()))
+				SET @Fecha = DATEADD(HOUR, @HoraFecha, @Fecha)
 
 				UPDATE Partidos
 				SET Fecha = @Fecha
-				WHERE CURRENT OF Cpartidos
+				WHERE ID = @Partido
 
 				IF(@Fecha <= GETDATE())
 					BEGIN
 						SET @GolesL = Floor(rand()*4)
 						SET @GolesV = Floor(rand()*3)
-						Update Partidos Set GolesLocal = @GolesL, GolesVisitante = @GolesV, Finalizado = 1
-							Where Current Of Cpartidos
+						UPDATE Partidos Set GolesLocal = @GolesL, GolesVisitante = @GolesV, Finalizado = 1
+							WHERE ID = @Partido
 					END -- If
 
 				FETCH NEXT FROM Cpartidos INTO @Partido
