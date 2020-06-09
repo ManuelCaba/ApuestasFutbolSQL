@@ -109,7 +109,8 @@ Create Table Apuestas (
 	Constraint FKApuestaPartido Foreign Key (IDPartido) REFERENCES Partidos (ID) ON DELETE NO ACTION ON UPDATE CASCADE,
 	Constraint FKApuestaUsuarioApostador Foreign Key (NickUsuario) REFERENCES UsuariosApostadores (Nick),
 	Constraint DineroApostado Check (DineroApostado >= 1),
-	Constraint CKResultado CHECK (Resultado IN ('1', 'X', '2'))
+	Constraint CKResultado CHECK (Resultado IN ('1', 'X', '2')),
+	Constraint UQUsuarioPartido UNIQUE (NickUsuario, IDPartido)
 )
 GO
 
