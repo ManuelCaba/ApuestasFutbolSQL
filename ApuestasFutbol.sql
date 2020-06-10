@@ -1,3 +1,4 @@
+--BASE DE DATOS CREADA Y GENERADA POR ALEJANDRO GATA Y MANUEL CABALLERO
 
 Create Database ApuestasFutbol
 GO
@@ -214,22 +215,6 @@ AS
 				ROLLBACK TRANSACTION
 			END
 
-	END
-GO
-
-GO
-CREATE OR ALTER TRIGGER ApuestaRepetida ON Apuestas AFTER INSERT
-AS
-	BEGIN
-
-		IF((SELECT COUNT(*) FROM Apuestas AS A
-		            INNER JOIN Inserted AS I ON A.IDPartido = I.IDPartido AND A.NickUsuario = I.NickUsuario) > 1)
-			BEGIN
-				DECLARE @ApuestaRealizada NVarchar(255) = FormatMessage(50004);
-				THROW 50004, @ApuestaRealizada, 1
-
-				ROLLBACK
-			END
 	END
 GO
 
